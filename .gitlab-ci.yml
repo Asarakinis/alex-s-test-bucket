@@ -1,41 +1,26 @@
-# This file is a template, and might need editing before it works on your project.
-# You can copy and paste this template into a new `.gitlab-ci.yml` file.
-# You should not add this template to an existing `.gitlab-ci.yml` file by using the `include:` keyword.
-#
-# To contribute improvements to CI/CD templates, please follow the Development guide at:
-# https://docs.gitlab.com/development/cicd/templates/
-# This specific template is located at:
-# https://gitlab.com/gitlab-org/gitlab/-/blob/master/lib/gitlab/ci/templates/Nodejs.gitlab-ci.yml
-
-# Official framework image. Look for the different tagged releases at:
-# https://hub.docker.com/r/library/node/tags/
 image: node:latest
 
-# Pick zero or more services to be used on all builds.
-# Only needed when using a docker container to run your tests in.
-# Check out: https://docs.gitlab.com/ee/ci/services/
-services:
-  - mysql:latest
-  - redis:latest
-  - postgres:latest
+variables:
+  S3_BUCKET_NAME: alex-s-test-bucket
 
-# This folder is cached between builds
-# https://docs.gitlab.com/ee/ci/yaml/#cache
+stages:
+  - test
+  - deploy
+
 cache:
   paths:
-    - node_modules/
+    - node_modules/ # This caches the dependencies between runs, saving time
 
-test_async:
+checks-job:
   script:
     - npm install
     - npm run check
 
-test_db:
-  script:
-    - npm install
-    - npm run check
-
-deploy:
+deploy-job:
   stage: deploy
-  script: echo "Deployment successful!"
   environment: production
+  image: registry.gitlab.com/gitlab-org/cloud-deploy/aws-base:latest
+  script:
+    - echo "Deploying application..."
+    - aws s3 sync . s3://$alex-s-test-bucket/ --exclude "*" --include "*.html" --delete
+    - echo "Application successfully deployed."
