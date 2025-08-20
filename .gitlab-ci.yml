@@ -22,5 +22,5 @@ deploy-job:
   image: registry.gitlab.com/gitlab-org/cloud-deploy/aws-base:latest
   script:
     - echo "Deploying application..."
-    - aws s3 sync . http://alex-s-test-bucket.s3-website.eu-west-2.amazonaws.com --exclude "*" --include "*.html" --delete
+    - aws s3 sync . s3://$alex-s-test-bucket/ --exclude "*" --include "*.html" --delete
     - echo "Application successfully deployed."
